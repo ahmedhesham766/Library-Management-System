@@ -2,7 +2,6 @@ package com.example.LibraryManagementSystem.controller;
 
 import com.example.LibraryManagementSystem.model.Book;
 import com.example.LibraryManagementSystem.service.BookService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +11,6 @@ import java.util.List;
 @RequestMapping("/api/books")
 public class BookController {
 
-    @Autowired
     private final BookService bookService;
 
     public BookController(BookService bookService) {

@@ -3,7 +3,6 @@ package com.example.LibraryManagementSystem.service.Impl;
 import com.example.LibraryManagementSystem.model.Patron;
 import com.example.LibraryManagementSystem.repo.PatronRepository;
 import com.example.LibraryManagementSystem.service.PatronService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.LibraryManagementSystem.exception.PatronNotFoundException;
 import java.util.List;
@@ -11,7 +10,6 @@ import java.util.List;
 @Service
 public class PatronServiceImpl implements PatronService {
 
-    @Autowired
     private final  PatronRepository patronRepository;
 
     public PatronServiceImpl(PatronRepository patronRepository) {

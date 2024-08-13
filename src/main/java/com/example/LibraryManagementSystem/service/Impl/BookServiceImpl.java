@@ -3,7 +3,6 @@ package com.example.LibraryManagementSystem.service.Impl;
 import com.example.LibraryManagementSystem.model.Book;
 import com.example.LibraryManagementSystem.repo.BookRepository;
 import com.example.LibraryManagementSystem.service.BookService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,7 +10,6 @@ import java.util.List;
 @Service
 public class BookServiceImpl implements BookService {
 
-    @Autowired
     private final BookRepository bookRepository;
 
     public BookServiceImpl(BookRepository bookRepository) {

@@ -2,9 +2,7 @@ package com.example.LibraryManagementSystem.controller;
 
 import com.example.LibraryManagementSystem.dto.BorrowingResponseDTO;
 import com.example.LibraryManagementSystem.dto.ReturningResponseDTO;
-import com.example.LibraryManagementSystem.model.BorrowingRecord;
 import com.example.LibraryManagementSystem.service.BorrowingService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api")
 public class BorrowingController {
 
-    @Autowired
     private final BorrowingService borrowingService;
 
     public BorrowingController(BorrowingService borrowingService) {

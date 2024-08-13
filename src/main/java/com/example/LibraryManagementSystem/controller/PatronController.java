@@ -2,7 +2,6 @@ package com.example.LibraryManagementSystem.controller;
 
 import com.example.LibraryManagementSystem.model.Patron;
 import com.example.LibraryManagementSystem.service.PatronService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +11,7 @@ import java.util.List;
 @RequestMapping("/api/patrons")
 public class PatronController {
 
-    @Autowired
+
     private final PatronService patronService;
 
     public PatronController(PatronService patronService) {
