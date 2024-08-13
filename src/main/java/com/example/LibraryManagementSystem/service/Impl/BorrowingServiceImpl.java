@@ -1,6 +1,7 @@
 package com.example.LibraryManagementSystem.service.Impl;
 
 import com.example.LibraryManagementSystem.exception.BookNotFoundException;
+import com.example.LibraryManagementSystem.exception.BorrowingNotAllowedException;
 import com.example.LibraryManagementSystem.exception.PatronNotFoundException;
 import com.example.LibraryManagementSystem.model.Book;
 import com.example.LibraryManagementSystem.model.BorrowingRecord;
@@ -41,6 +42,14 @@ public class BorrowingServiceImpl implements BorrowingService {
         Patron patron = patronRepository.findById(patronId)
                 .orElseThrow(() -> new PatronNotFoundException(patronId));
 
+        boolean alreadyBorrowed = recordRepository
+                .findByBookAndPatronAndReturnDateIsNull(book, patron)
+                .isPresent();
+
+        if (alreadyBorrowed) {
+            throw new BorrowingNotAllowedException("Patron " + patronId + " has already borrowed book " + bookId);
+        }
+
         if (book.getCopiesAvailable() <= 0) {
             throw new RuntimeException("No copies available for book: " + book.getTitle());
         }
@@ -64,18 +73,14 @@ public class BorrowingServiceImpl implements BorrowingService {
         Patron patron = patronRepository.findById(patronId)
                 .orElseThrow(() -> new PatronNotFoundException(patronId));
 
-        // Find the active borrowing record for the book and patron
         BorrowingRecord borrowingRecord = recordRepository.findByBookAndPatronAndReturnDateIsNull(book, patron)
                 .orElseThrow(() -> new RuntimeException("Borrowing record not found for book ID " + bookId + " and patron ID " + patronId));
 
-        // Set the return date
         borrowingRecord.setReturnDate(LocalDate.now());
 
-        // Increase the available copies of the book
         book.setCopiesAvailable(book.getCopiesAvailable() + 1);
         bookRepository.save(book);
 
-        // Save the updated borrowing record
         return recordRepository.save(borrowingRecord);
     }
 }
