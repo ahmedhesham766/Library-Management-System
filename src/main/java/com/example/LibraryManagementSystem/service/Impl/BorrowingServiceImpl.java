@@ -1,8 +1,8 @@
 package com.example.LibraryManagementSystem.service.Impl;
 
-import com.example.LibraryManagementSystem.exception.BookNotFoundException;
-import com.example.LibraryManagementSystem.exception.BorrowingNotAllowedException;
-import com.example.LibraryManagementSystem.exception.PatronNotFoundException;
+import com.example.LibraryManagementSystem.dto.BorrowingResponseDTO;
+import com.example.LibraryManagementSystem.dto.ReturningResponseDTO;
+import com.example.LibraryManagementSystem.exception.*;
 import com.example.LibraryManagementSystem.model.Book;
 import com.example.LibraryManagementSystem.model.BorrowingRecord;
 import com.example.LibraryManagementSystem.model.Patron;
@@ -10,17 +10,18 @@ import com.example.LibraryManagementSystem.repo.BookRepository;
 import com.example.LibraryManagementSystem.repo.BorrowingRecordRepository;
 import com.example.LibraryManagementSystem.repo.PatronRepository;
 import com.example.LibraryManagementSystem.service.BorrowingService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 public class BorrowingServiceImpl implements BorrowingService {
 
     @Autowired
     private final BorrowingRecordRepository recordRepository;
-
 
     @Autowired
     private final BookRepository bookRepository;
@@ -34,53 +35,89 @@ public class BorrowingServiceImpl implements BorrowingService {
         this.patronRepository = patronRepository;
     }
 
+    @Transactional
     @Override
-    public BorrowingRecord borrowBook(Long bookId, Long patronId) {
-        Book book = bookRepository.findById(bookId)
+    public BorrowingResponseDTO borrowBook(Long bookId, Long patronId) {
+        Book book = findBookById(bookId);
+        Patron patron = findPatronById(patronId);
+
+        validateBorrowing(book, patron);
+
+        BorrowingRecord borrowingRecord = createBorrowingRecord(book, patron);
+        updateBookAvailability(book);
+
+        return new BorrowingResponseDTO(patron.getName(), book.getTitle(), borrowingRecord.getBorrowingDate());
+    }
+
+    private Book findBookById(Long bookId) {
+        return bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException(bookId));
+    }
 
-        Patron patron = patronRepository.findById(patronId)
+    private Patron findPatronById(Long patronId) {
+        return patronRepository.findById(patronId)
                 .orElseThrow(() -> new PatronNotFoundException(patronId));
+    }
 
+    private void validateBorrowing(Book book, Patron patron) {
         boolean alreadyBorrowed = recordRepository
                 .findByBookAndPatronAndReturnDateIsNull(book, patron)
                 .isPresent();
 
         if (alreadyBorrowed) {
-            throw new BorrowingNotAllowedException("Patron " + patronId + " has already borrowed book " + bookId);
+            throw new BorrowingNotAllowedException(patron, book);
         }
 
         if (book.getCopiesAvailable() <= 0) {
-            throw new RuntimeException("No copies available for book: " + book.getTitle());
+            throw new NoAvailableCopiesException(book);
         }
+    }
 
+    private BorrowingRecord createBorrowingRecord(Book book, Patron patron) {
         BorrowingRecord borrowingRecord = new BorrowingRecord();
         borrowingRecord.setBook(book);
         borrowingRecord.setPatron(patron);
         borrowingRecord.setBorrowingDate(LocalDate.now());
-
-        book.setCopiesAvailable(book.getCopiesAvailable() - 1);
-        bookRepository.save(book);
-
         return recordRepository.save(borrowingRecord);
     }
 
+    private void updateBookAvailability(Book book) {
+        book.setCopiesAvailable(book.getCopiesAvailable() - 1);
+        bookRepository.save(book);
+    }
+
+    @Transactional
     @Override
-    public BorrowingRecord returnBook(Long bookId, Long patronId) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new BookNotFoundException(bookId));
+    public ReturningResponseDTO returnBook(Long bookId, Long patronId) {
+        Book book = findBookById(bookId);
+        Patron patron = findPatronById(patronId);
 
-        Patron patron = patronRepository.findById(patronId)
-                .orElseThrow(() -> new PatronNotFoundException(patronId));
+        BorrowingRecord borrowingRecord = findActiveBorrowingRecord(book, patron);
+        processBookReturn(borrowingRecord, book);
 
-        BorrowingRecord borrowingRecord = recordRepository.findByBookAndPatronAndReturnDateIsNull(book, patron)
-                .orElseThrow(() -> new RuntimeException("Borrowing record not found for book ID " + bookId + " and patron ID " + patronId));
+        return new ReturningResponseDTO(patron.getName(), book.getTitle(), borrowingRecord.getReturnDate());
+    }
+
+    private BorrowingRecord findActiveBorrowingRecord(Book book, Patron patron) {
+        return recordRepository.findByBookAndPatronAndReturnDateIsNull(book, patron)
+                .orElseThrow(() -> {
+                    Optional<BorrowingRecord> lastBorrowingRecord = recordRepository.findTopByBookAndPatronOrderByReturnDateDesc(book, patron);
+                    if (lastBorrowingRecord.isPresent()) {
+                        LocalDate returnDate = lastBorrowingRecord.get().getReturnDate();
+                        return new BookAlreadyReturnedException(book, patron, returnDate);
+                    } else {
+                        return new BorrowingRecordNotFoundException(book.getId(), patron.getId());
+                    }
+                });
+    }
+
+    private void processBookReturn(BorrowingRecord borrowingRecord, Book book) {
 
         borrowingRecord.setReturnDate(LocalDate.now());
 
         book.setCopiesAvailable(book.getCopiesAvailable() + 1);
         bookRepository.save(book);
-
-        return recordRepository.save(borrowingRecord);
+        recordRepository.save(borrowingRecord);
     }
+
 }

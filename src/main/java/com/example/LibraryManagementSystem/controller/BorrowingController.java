@@ -1,5 +1,7 @@
 package com.example.LibraryManagementSystem.controller;
 
+import com.example.LibraryManagementSystem.dto.BorrowingResponseDTO;
+import com.example.LibraryManagementSystem.dto.ReturningResponseDTO;
 import com.example.LibraryManagementSystem.model.BorrowingRecord;
 import com.example.LibraryManagementSystem.service.BorrowingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,15 +21,15 @@ public class BorrowingController {
 
 
     @PostMapping("/borrow/{bookId}/patron/{patronId}")
-    public ResponseEntity<BorrowingRecord> borrowBook(@PathVariable Long bookId, @PathVariable Long patronId) {
-        BorrowingRecord borrowingRecord = borrowingService.borrowBook(bookId, patronId);
+    public ResponseEntity<BorrowingResponseDTO> borrowBook(@PathVariable Long bookId, @PathVariable Long patronId) {
+        BorrowingResponseDTO  borrowingRecord = borrowingService.borrowBook(bookId, patronId);
         return ResponseEntity.ok(borrowingRecord);
     }
 
 
     @PutMapping("/return/{bookId}/patron/{patronId}")
-    public ResponseEntity<BorrowingRecord> returnBook(@PathVariable Long bookId, @PathVariable Long patronId) {
-        BorrowingRecord borrowingRecord = borrowingService.returnBook(bookId, patronId);
+    public ResponseEntity<ReturningResponseDTO> returnBook(@PathVariable Long bookId, @PathVariable Long patronId) {
+        ReturningResponseDTO  borrowingRecord = borrowingService.returnBook(bookId, patronId);
         return ResponseEntity.ok(borrowingRecord);
     }
 }
