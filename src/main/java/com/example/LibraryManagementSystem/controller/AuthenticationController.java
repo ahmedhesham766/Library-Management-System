@@ -1,12 +1,10 @@
 package com.example.LibraryManagementSystem.controller;
 
 import com.example.LibraryManagementSystem.model.AuthenticationRequest;
-import com.example.LibraryManagementSystem.model.RegistrationRequest;
 import com.example.LibraryManagementSystem.model.AuthenticationResponse;
 import com.example.LibraryManagementSystem.security.JwtUtil;
 import com.example.LibraryManagementSystem.service.Impl.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -43,13 +41,10 @@ public class AuthenticationController {
             throw new Exception("Incorrect username or password", e);
         }
 
-        // Load user details to generate JWT
         final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
 
-        // Generate token
         final String jwt = jwtUtil.generateToken(userDetails);
 
-        // Return the token in the response
         return new AuthenticationResponse(jwt);
     }
 }
