@@ -1,16 +1,22 @@
 package com.example.LibraryManagementSystem.model;
 
-public class AuthenticationRequest {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+
+public class RegistrationRequest {
+
     private String username;
     private String password;
+    private String roles;
 
-    // Getters and setters
-
-    public AuthenticationRequest() {
+    public RegistrationRequest() {
     }
 
-    public AuthenticationRequest(String password, String username) {
+    public RegistrationRequest(String password, String roles, String username) {
         this.password = password;
+        this.roles = roles;
         this.username = username;
     }
 
@@ -29,4 +35,14 @@ public class AuthenticationRequest {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public String getRoles() {
+        return roles;
+    }
+
+    public void setRoles(String roles) {
+        this.roles = roles;
+    }
+
+
 }
