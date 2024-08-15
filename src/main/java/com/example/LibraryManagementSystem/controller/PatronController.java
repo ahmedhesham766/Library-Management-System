@@ -2,6 +2,7 @@ package com.example.LibraryManagementSystem.controller;
 
 import com.example.LibraryManagementSystem.model.Patron;
 import com.example.LibraryManagementSystem.service.PatronService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +35,7 @@ public class PatronController {
     @PostMapping
     public ResponseEntity<Patron> createPatron(@RequestBody Patron patron) {
         Patron newPatron = patronService.createPatron(patron);
-        return ResponseEntity.ok(newPatron);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newPatron);
     }
 
 
@@ -46,8 +47,9 @@ public class PatronController {
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePatron(@PathVariable Long id) {
+    public ResponseEntity<String> deletePatron(@PathVariable Long id) {
         patronService.deletePatron(id);
-        return ResponseEntity.noContent().build();
+        String message = "Patron with ID " + id + " deleted successfully.";
+        return ResponseEntity.ok(message);
     }
 }

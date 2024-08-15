@@ -91,6 +91,28 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(BookCurrentlyBorrowedException.class)
+    public ResponseEntity<Object> handleBookCurrentlyBorrowedException(BookCurrentlyBorrowedException ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", "Book Currently Borrowed");
+        body.put("message", ex.getMessage());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("timestamp", System.currentTimeMillis());
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+
+    @ExceptionHandler(PatronHasActiveBorrowingsException.class)
+    public ResponseEntity<Object> handlePatronHasActiveBorrowingsException(PatronHasActiveBorrowingsException ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", "Patron Has Active Borrowings");
+        body.put("message", ex.getMessage());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("timestamp", System.currentTimeMillis());
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
 
 
 }
