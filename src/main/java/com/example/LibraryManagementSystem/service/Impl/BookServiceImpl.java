@@ -8,6 +8,7 @@ import com.example.LibraryManagementSystem.repo.BookRepository;
 import com.example.LibraryManagementSystem.service.BookService;
 import com.example.LibraryManagementSystem.service.BorrowingService;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
@@ -38,7 +39,7 @@ public class BookServiceImpl implements BookService {
     @Override
     @Cacheable("books")
     public Book getBookById(Long id) {
-        logger.debug("Fetching book with ID {} from the database", id);
+        System.out.println("Fetching book with ID {} from the database"+ id);
         return bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException(id));
     }
 
@@ -48,7 +49,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    @CacheEvict(value = "books", allEntries = true)
+    @CachePut(value = "books", key = "#id")
     public Book updateBook(Long id, Book bookDetails) {
         if (borrowService.isBookBorrowed(id)) {
             BorrowingRecord record = borrowService.getActiveBorrowingRecordByBookId(id);

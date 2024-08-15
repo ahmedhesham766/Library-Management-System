@@ -45,7 +45,8 @@ public class BorrowingServiceImpl implements BorrowingService {
         validateBorrowing(book, patron);
 
         BorrowingRecord borrowingRecord = createBorrowingRecord(book, patron);
-        updateBookAvailability(book);
+        int newCopiesAvailable = book.getCopiesAvailable() - 1;
+        updateBookAvailability(book, newCopiesAvailable);
 
         return new BorrowingResponseDTO(patron.getName(), book.getTitle(), borrowingRecord.getBorrowingDate());
     }
@@ -82,9 +83,9 @@ public class BorrowingServiceImpl implements BorrowingService {
         return recordRepository.save(borrowingRecord);
     }
 
-    private void updateBookAvailability(Book book) {
-        book.setCopiesAvailable(book.getCopiesAvailable() - 1);
-        bookRepository.save(book);
+
+    private void updateBookAvailability(Book book ,int newCopiesAvailable) {
+        bookRepository.updateCopiesAvailable(book.getId() ,newCopiesAvailable );
     }
 
     @Transactional
@@ -126,8 +127,8 @@ public class BorrowingServiceImpl implements BorrowingService {
 
         borrowingRecord.setReturnDate(LocalDate.now());
 
-        book.setCopiesAvailable(book.getCopiesAvailable() + 1);
-        bookRepository.save(book);
+        int newCopiesAvailable = book.getCopiesAvailable() + 1;
+        updateBookAvailability(book, newCopiesAvailable);
         recordRepository.save(borrowingRecord);
     }
 
