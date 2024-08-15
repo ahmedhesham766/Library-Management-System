@@ -11,22 +11,23 @@ import com.example.LibraryManagementSystem.repo.BorrowingRecordRepository;
 import com.example.LibraryManagementSystem.repo.PatronRepository;
 import com.example.LibraryManagementSystem.service.BorrowingService;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 @Service
 public class BorrowingServiceImpl implements BorrowingService {
 
-    @Autowired
+
     private final BorrowingRecordRepository recordRepository;
 
-    @Autowired
+
     private final BookRepository bookRepository;
 
-    @Autowired
+
     private final PatronRepository patronRepository;
 
     public BorrowingServiceImpl(BorrowingRecordRepository recordRepository, BookRepository bookRepository, PatronRepository patronRepository) {
@@ -98,6 +99,16 @@ public class BorrowingServiceImpl implements BorrowingService {
         return new ReturningResponseDTO(patron.getName(), book.getTitle(), borrowingRecord.getReturnDate());
     }
 
+    @Override
+    public boolean isBookBorrowed(Long bookId) {
+        return !recordRepository.findByBookIdAndReturnDateIsNull(bookId).isEmpty();
+    }
+
+    public boolean isPatronBorrowing(Long patronId) {
+        return !recordRepository.findByPatronIdAndReturnDateIsNull(patronId).isEmpty();
+    }
+
+
     private BorrowingRecord findActiveBorrowingRecord(Book book, Patron patron) {
         return recordRepository.findByBookAndPatronAndReturnDateIsNull(book, patron)
                 .orElseThrow(() -> {
@@ -118,6 +129,23 @@ public class BorrowingServiceImpl implements BorrowingService {
         book.setCopiesAvailable(book.getCopiesAvailable() + 1);
         bookRepository.save(book);
         recordRepository.save(borrowingRecord);
+    }
+
+
+    private BorrowingRecord getActiveBorrowingRecord(Function<BorrowingRecordRepository, List<BorrowingRecord>> finder) {
+        List<BorrowingRecord> records = finder.apply(recordRepository);
+        if (!records.isEmpty()) {
+            return records.get(0);
+        }
+        return null;
+    }
+
+    public BorrowingRecord getActiveBorrowingRecordByBookId(Long bookId) {
+        return getActiveBorrowingRecord(repo -> repo.findByBookIdAndReturnDateIsNull(bookId));
+    }
+
+    public BorrowingRecord getActiveBorrowingRecordByPatronId(Long patronId) {
+        return getActiveBorrowingRecord(repo -> repo.findByPatronIdAndReturnDateIsNull(patronId));
     }
 
 }
